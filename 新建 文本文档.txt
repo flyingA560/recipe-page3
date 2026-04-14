@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>初中生轻食食谱</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FFE6F4',
+                        secondary: '#E6FFEF',
+                        accent: '#FFD1DC',
+                        textDark: '#333333',
+                        textMedium: '#555555',
+                        textLight: '#888888'
+                    },
+                    fontFamily: {
+                        sans: ['Arial', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .btn-primary {
+                @apply bg-gradient-to-r from-pink-100 to-blue-100 text-textDark font-bold text-[20px] py-4 px-8 rounded-xl transition-all duration-300 shadow-md hover:shadow-lg;
+            }
+            .btn-secondary {
+                @apply bg-gradient-to-r from-green-100 to-blue-100 text-textDark font-bold text-[20px] py-4 px-8 rounded-xl transition-all duration-300 shadow-md hover:shadow-lg;
+            }
+            .btn-primary:active, .btn-secondary:active {
+                @apply scale-95;
+            }
+            .card-recipe {
+                @apply bg-white rounded-xl p-6 shadow-lg border border-pink-50;
+            }
+            .card-tip {
+                @apply bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-5 shadow-sm;
+            }
+            .input-field {
+                @apply border border-pink-100 rounded-xl px-4 py-3 text-[18px] w-full focus:outline-none focus:ring-2 focus:ring-pink-200;
+            }
+            .radio-label {
+                @apply flex items-center space-x-2 cursor-pointer;
+            }
+            /* 选择框改为白色 + 粉色边框 */
+            .radio-input {
+                @apply w-5 h-5 text-pink-300 bg-white border-pink-200 focus:ring-pink-200;
+            }
+            .section-title {
+                @apply text-[26px] font-bold text-textDark bg-gradient-to-r from-pink-200 to-blue-200 bg-clip-text text-transparent;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-pink-50 via-white to-blue-50 min-h-screen font-sans text-textMedium">
+    <div id="app" class="max-w-md mx-auto min-h-screen p-5 pb-20">
+        <!-- 🌟 美化后首页 -->
+        <div id="page-home" class="flex flex-col items-center justify-center min-h-[90vh] text-center px-4">
+            <div class="text-7xl text-pink-300 mb-6 mt-4 animate-bounce">
+                <i class="fa fa-leaf"></i>
+            </div>
+
+            <h1 class="text-[36px] font-bold text-textDark mb-3">
+                初中生轻食食谱
+            </h1>
+            <p class="text-[17px] text-textLight mb-10 max-w-xs">
+                科学营养 · 低卡均衡 · 助力成长 · 活力满满
+            </p>
+
+            <div class="w-full bg-gradient-to-r from-pink-50 to-blue-50 rounded-2xl p-6 mb-12 shadow-md">
+                <div class="flex justify-around text-3xl text-pink-300 mb-4">
+                    <i class="fa fa-apple"></i>
+                    <i class="fa fa-cutlery"></i>
+                    <i class="fa fa-heart"></i>
+                </div>
+                <p class="text-[18px] text-textMedium font-medium">
+                    一键生成你的专属健康食谱
+                </p>
+            </div>
+
+            <button id="btn-generate" class="btn-primary w-full">
+                🍽️ 一键生成食谱
+            </button>
+        </div>
+
+        <!-- 个人信息 + BMI 计算 -->
+        <div id="page-info" class="hidden">
+            <div class="flex items-center mb-8">
+                <button class="btn-back mr-4 text-2xl text-pink-300" data-back="home">
+                    <i class="fa fa-arrow-left"></i>
+                </button>
+                <h2 class="section-title">个人信息 & BMI</h2>
+            </div>
+            <form id="form-info" class="space-y-6">
+                <div>
+                    <label class="block text-[18px] font-medium mb-2">年龄</label>
+                    <input type="number" id="age" class="input-field" placeholder="请输入年龄" min="12" max="18" value="15">
+                </div>
+                <div>
+                    <label class="block text-[18px] font-medium mb-2">性别</label>
+                    <div class="flex space-x-6">
+                        <label class="radio-label">
+                            <input type="radio" name="gender" value="male" class="radio-input" checked>
+                            <span class="text-[18px]">男</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="gender" value="female" class="radio-input">
+                            <span class="text-[18px]">女</span>
+                        </label>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[18px] font-medium mb-2">身高 (cm)</label>
+                    <input type="number" id="height" class="input-field" placeholder="请输入身高" min="140" max="200" value="160">
+                </div>
+                <div>
+                    <label class="block text-[18px] font-medium mb-2">体重 (kg)</label>
+                    <input type="number" id="weight" class="input-field" placeholder="请输入体重" min="30" max="100" value="50">
+                </div>
+
+                <div class="card-recipe bg-gradient-to-r from-blue-50 to-pink-50">
+                    <p class="text-[19px] font-bold mb-2">你的 BMI 结果</p>
+                    <p id="bmi-value" class="text-[24px] font-bold text-pink-400">19.53</p>
+                    <p id="bmi-level" class="text-[17px] text-blue-500 font-medium">正常范围</p>
+                    <p class="text-sm mt-1 text-textLight">计算公式：BMI = 体重 ÷ 身高²</p>
+                </div>
+
+                <button type="button" id="btn-next" class="btn-secondary w-full mt-8">
+                    下一步 →
+                </button>
+            </form>
+        </div>
+
+        <!-- 饮食条件 -->
+        <div id="page-diet" class="hidden">
+            <div class="flex items-center mb-8">
+                <button class="btn-back mr-4 text-2xl text-pink-300" data-back="info">
+                    <i class="fa fa-arrow-left"></i>
+                </button>
+                <h2 class="section-title">饮食条件</h2>
+            </div>
+            <form id="form-diet" class="space-y-6">
+                <div>
+                    <label class="block text-[18px] font-medium mb-3">餐段选择</label>
+                    <div class="grid grid-cols-3 gap-4">
+                        <label class="radio-label flex-col items-center p-5 border border-pink-100 rounded-xl bg-white shadow-sm hover:shadow-md transition-all">
+                            <input type="radio" name="meal" value="breakfast" class="radio-input" checked>
+                            <span class="text-[18px] mt-2">早餐</span>
+                        </label>
+                        <label class="radio-label flex-col items-center p-5 border border-pink-100 rounded-xl bg-white shadow-sm hover:shadow-md transition-all">
+                            <input type="radio" name="meal" value="lunch" class="radio-input">
+                            <span class="text-[18px] mt-2">午餐</span>
+                        </label>
+                        <label class="radio-label flex-col items-center p-5 border border-pink-100 rounded-xl bg-white shadow-sm hover:shadow-md transition-all">
+                            <input type="radio" name="meal" value="dinner" class="radio-input">
+                            <span class="text-[18px] mt-2">晚餐</span>
+                        </label>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[18px] font-medium mb-2">忌口食物</label>
+                    <input type="text" id="avoid" class="input-field" placeholder="请输入忌口食物（选填）">
+                </div>
+                <div>
+                    <label class="block text-[18px] font-medium mb-2">过敏食物</label>
+                    <input type="text" id="allergy" class="input-field" placeholder="请输入过敏食物（选填）">
+                </div>
+                <button type="button" id="btn-generate-recipe" class="btn-primary w-full mt-8">
+                    开始生成食谱
+                </button>
+            </form>
+        </div>
+
+        <!-- 食谱结果 -->
+        <div id="page-recipe" class="hidden">
+            <div class="flex items-center mb-8">
+                <button class="btn-back mr-4 text-2xl text-pink-300" data-back="diet">
+                    <i class="fa fa-arrow-left"></i>
+                </button>
+                <h2 class="section-title">你的专属食谱</h2>
+            </div>
+            <div id="recipe-card" class="card-recipe mb-8 bg-gradient-to-r from-white to-pink-50">
+                <h3 id="recipe-name" class="text-[22px] font-bold text-textDark mb-4">营养均衡早餐</h3>
+                <div class="space-y-4">
+                    <p class="text-[18px]"><span class="font-bold">食材：</span><span id="recipe-ingredients">全麦面包2片、鸡蛋1个、牛奶200ml、苹果1个</span></p>
+                    <p class="text-[18px]"><span class="font-bold">总热量：</span><span id="recipe-calories" class="text-pink-500 font-bold">320大卡</span></p>
+                    <div class="flex flex-wrap gap-3 mt-4">
+                        <span class="bg-pink-50 px-4 py-1 rounded-full text-[16px] shadow-sm">蛋白质：15g</span>
+                        <span class="bg-blue-50 px-4 py-1 rounded-full text-[16px] shadow-sm">碳水：45g</span>
+                        <span class="bg-green-50 px-4 py-1 rounded-full text-[16px] shadow-sm">维生素：丰富</span>
+                    </div>
+                </div>
+            </div>
+            <div class="flex space-x-4">
+                <button id="btn-regenerate" class="btn-primary flex-1">
+                    重新生成
+                </button>
+                <button id="btn-tips" class="btn-primary flex-1">
+                    查看小贴士
+                </button>
+            </div>
+        </div>
+
+        <!-- 减肥小贴士 -->
+        <div id="page-tips" class="hidden">
+            <div class="flex items-center mb-8">
+                <button class="btn-back mr-4 text-2xl text-pink-300" data-back="recipe">
+                    <i class="fa fa-arrow-left"></i>
+                </button>
+                <h2 class="section-title">健康小贴士</h2>
+            </div>
+            <div class="space-y-4 mb-8">
+                <div class="card-tip">
+                    <p class="text-[18px]"><i class="fa fa-cutlery mr-2 text-pink-300"></i> 三餐规律，不暴饮暴食</p>
+                </div>
+                <div class="card-tip">
+                    <p class="text-[18px]"><i class="fa fa-fire mr-2 text-blue-300"></i> 少油少糖，多吃蔬菜</p>
+                </div>
+                <div class="card-tip">
+                    <p class="text-[18px]"><i class="fa fa-heartbeat mr-2 text-green-300"></i> 每天运动30分钟更健康</p>
+                </div>
+            </div>
+            <button id="btn-back-to-recipe" class="btn-primary w-full">
+                返回我的食谱
+            </button>
+        </div>
+
+        <!-- 历史食谱 -->
+        <div id="page-history" class="hidden">
+            <div class="flex items-center mb-8">
+                <button class="btn-back mr-4 text-2xl text-pink-300" data-back="home">
+                    <i class="fa fa-arrow-left"></i>
+                </button>
+                <h2 class="section-title">历史食谱</h2>
+            </div>
+            <div id="history-list" class="space-y-4 mb-8">
+                <div class="bg-white border border-pink-100 rounded-xl p-4 flex justify-between items-center shadow-md">
+                    <div>
+                        <p class="text-[18px] font-bold">早餐</p>
+                        <p class="text-[16px] text-textMedium">全麦面包、鸡蛋、牛奶</p>
+                        <p class="text-[16px] text-textLight">320大卡</p>
+                    </div>
+                    <button class="btn-primary py-2 px-4 text-[16px]">查看</button>
+                </div>
+            </div>
+            <button id="btn-feedback" class="btn-primary w-full">
+                提交反馈
+            </button>
+        </div>
+
+        <!-- 用户反馈 -->
+        <div id="page-feedback" class="hidden">
+            <div class="flex items-center mb-8">
+                <button class="btn-back mr-4 text-2xl text-pink-300" data-back="history">
+                    <i class="fa fa-arrow-left"></i>
+                </button>
+                <h2 class="section-title">用户反馈</h2>
+            </div>
+            <form id="form-feedback" class="space-y-6">
+                <div>
+                    <label class="block text-[18px] font-medium mb-2">评分</label>
+                    <div class="flex space-x-4 text-3xl text-yellow-400">
+                        <i class="fa fa-star cursor-pointer" data-rating="1"></i>
+                        <i class="fa fa-star cursor-pointer" data-rating="2"></i>
+                        <i class="fa fa-star cursor-pointer" data-rating="3"></i>
+                        <i class="fa fa-star cursor-pointer" data-rating="4"></i>
+                        <i class="fa fa-star cursor-pointer" data-rating="5"></i>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[18px] font-medium mb-2">总体评价</label>
+                    <div class="flex flex-col space-y-3">
+                        <label class="radio-label">
+                            <input type="radio" name="evaluation" value="good" class="radio-input" checked>
+                            <span class="text-[18px]">很好用</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="evaluation" value="average" class="radio-input">
+                            <span class="text-[18px]">一般般</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="evaluation" value="bad" class="radio-input">
+                            <span class="text-[18px]">不太好用</span>
+                        </label>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[18px] font-medium mb-2">建议</label>
+                    <textarea id="suggestion" class="input-field h-32" placeholder="请输入您的建议"></textarea>
+                </div>
+                <button type="button" id="btn-submit-feedback" class="btn-secondary w-full">
+                    提交反馈
+                </button>
+            </form>
+            <div id="feedback-success" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+                <div class="bg-white rounded-xl p-6 w-4/5 text-center shadow-xl">
+                    <i class="fa fa-check-circle text-green-400 text-5xl mb-4"></i>
+                    <p class="text-[20px] font-bold mb-4">反馈提交成功！</p>
+                    <button id="btn-close-feedback" class="btn-primary">确定</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部导航 -->
+        <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-pink-100 flex justify-around py-3 px-5 max-w-md mx-auto shadow-md">
+            <button id="nav-home" class="flex flex-col items-center text-pink-300">
+                <i class="fa fa-home text-2xl"></i>
+                <span class="text-[12px] mt-1">首页</span>
+            </button>
+            <button id="nav-history" class="flex flex-col items-center text-textLight">
+                <i class="fa fa-history text-2xl"></i>
+                <span class="text-[12px] mt-1">历史</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const pages = {
+            home: document.getElementById('page-home'),
+            info: document.getElementById('page-info'),
+            diet: document.getElementById('page-diet'),
+            recipe: document.getElementById('page-recipe'),
+            tips: document.getElementById('page-tips'),
+            history: document.getElementById('page-history'),
+            feedback: document.getElementById('page-feedback')
+        };
+
+        function showPage(pageName) {
+            Object.keys(pages).forEach(key => pages[key].classList.add('hidden'));
+            pages[pageName].classList.remove('hidden');
+            document.getElementById('nav-home').classList.toggle('text-pink-300', pageName === 'home');
+            document.getElementById('nav-home').classList.toggle('text-textLight', pageName !== 'home');
+            document.getElementById('nav-history').classList.toggle('text-pink-300', pageName === 'history');
+            document.getElementById('nav-history').classList.toggle('text-textLight', pageName !== 'history');
+        }
+
+        // ===================== BMI 计算功能 =====================
+        function calculateBMI() {
+            let height = parseFloat(document.getElementById('height').value) / 100;
+            let weight = parseFloat(document.getElementById('weight').value);
+            let bmi = weight / (height * height);
+            bmi = bmi.toFixed(2);
+
+            let level = '';
+            let color = '';
+            if(bmi < 18.5) {
+                level = '偏瘦';
+                color = 'text-blue-500';
+            } else if(bmi < 24) {
+                level = '正常';
+                color = 'text-green-500';
+            } else if(bmi < 28) {
+                level = '超重';
+                color = 'text-orange-500';
+            } else {
+                level = '肥胖';
+                color = 'text-red-500';
+            }
+
+            document.getElementById('bmi-value').textContent = bmi;
+            document.getElementById('bmi-level').textContent = 'BMI 结果：' + level;
+            document.getElementById('bmi-level').className = 'text-[17px] font-medium ' + color;
+        }
+
+        // 输入时自动计算 BMI
+        document.getElementById('height').addEventListener('input', calculateBMI);
+        document.getElementById('weight').addEventListener('input', calculateBMI);
+
+        const recipes = {
+            breakfast: [{name:"营养均衡早餐",ingredients:"全麦面包2片、鸡蛋1个、牛奶200ml、苹果1个",calories:"320大卡",protein:"15g",carbs:"45g",vitamins:"丰富"},{name:"活力早餐",ingredients:"燕麦粥、蓝莓、酸奶、核桃",calories:"300大卡",protein:"12g",carbs:"48g",vitamins:"丰富"}],
+            lunch: [{name:"减脂午餐",ingredients:"糙米饭、鸡胸肉、西兰花、番茄",calories:"450大卡",protein:"35g",carbs:"40g",vitamins:"适量"},{name:"营养午餐",ingredients:"杂粮饭、清蒸鱼、胡萝卜、青菜",calories:"420大卡",protein:"38g",carbs:"35g",vitamins:"丰富"}],
+            dinner: [{name:"轻食晚餐",ingredients:"红薯、豆腐、菠菜、鸡蛋",calories:"350大卡",protein:"25g",carbs:"30g",vitamins:"丰富"},{name:"健康晚餐",ingredients:"玉米、虾仁、黄瓜、芹菜",calories:"320大卡",protein:"28g",carbs:"25g",vitamins:"适量"}]
+        };
+
+        document.querySelectorAll('.btn-back').forEach(btn => {
+            btn.addEventListener('click', () => showPage(btn.dataset.back));
+        });
+
+        document.getElementById('btn-generate').addEventListener('click', () => {
+            calculateBMI();
+            showPage('info');
+        });
+        document.getElementById('btn-next').addEventListener('click', () => showPage('diet'));
+        document.getElementById('btn-tips').addEventListener('click', () => showPage('tips'));
+        document.getElementById('btn-back-to-recipe').addEventListener('click', () => showPage('recipe'));
+        document.getElementById('btn-feedback').addEventListener('click', () => showPage('feedback'));
+        document.getElementById('nav-home').addEventListener('click', () => showPage('home'));
+        document.getElementById('nav-history').addEventListener('click', () => showPage('history'));
+
+        function generateRecipe() {
+            const meal = document.querySelector('input[name="meal"]:checked').value;
+            const r = recipes[meal][Math.floor(Math.random()*recipes[meal].length)];
+            document.getElementById('recipe-name').textContent = r.name;
+            document.getElementById('recipe-ingredients').textContent = r.ingredients;
+            document.getElementById('recipe-calories').textContent = r.calories;
+            document.querySelector('#recipe-card .flex').innerHTML = `
+                <span class="bg-pink-50 px-4 py-1 rounded-full shadow-sm">蛋白质：${r.protein}</span>
+                <span class="bg-blue-50 px-4 py-1 rounded-full shadow-sm">碳水：${r.carbs}</span>
+                <span class="bg-green-50 px-4 py-1 rounded-full shadow-sm">维生素：${r.vitamins}</span>`;
+            showPage('recipe');
+        }
+
+        document.getElementById('btn-generate-recipe').addEventListener('click', generateRecipe);
+        document.getElementById('btn-regenerate').addEventListener('click', generateRecipe);
+
+        document.querySelectorAll('.fa-star').forEach(star => {
+            star.addEventListener('click', () => {
+                const v = star.dataset.rating;
+                document.querySelectorAll('.fa-star').forEach(s => {
+                    s.classList.toggle('text-yellow-400', s.dataset.rating <= v);
+                    s.classList.toggle('text-gray-300', s.dataset.rating > v);
+                });
+            });
+        });
+
+        document.getElementById('btn-submit-feedback').addEventListener('click', () => {
+            document.getElementById('feedback-success').classList.remove('hidden');
+        });
+        document.getElementById('btn-close-feedback').addEventListener('click', () => {
+            document.getElementById('feedback-success').classList.add('hidden');
+            showPage('feedback');
+        });
+
+        calculateBMI();
+        showPage('home');
+    </script>
+</body>
+</html>
